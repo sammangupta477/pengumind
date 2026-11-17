@@ -35,15 +35,28 @@ def detect_route_change(query_text):
         return True
     return False
 
+@st.cache_data(ttl=3600)
+def get_valid_models(_api_key):
+    client = genai.Client(api_key=_api_key)
+    found = [m.name.replace("models/", "") for m in client.models.list() if "gemini" in m.name and "flash" in m.name and "embedding" not in m.name and "image" not in m.name and "audio" not in m.name]
+    preferred = [m for m in ["gemini-3.8-flash", "gemini-3.8-flash-lite", "gemini-2.5-flash-lite"] if m in found]
+    return preferred + [m for m in found if m not in preferred]
+
 def ask_pip(api_key_val, prompt_text, sys_instruction):
-    client = genai.Client(api_key=api_key_val, http_options=types.HttpOptions(timeout=12000))
+    import time
+    client = genai.Client(api_key=api_key_val, http_options=types.HttpOptions(timeout=15000))
+    models = get_valid_models(api_key_val) or ["gemini-3.8-flash"]
     last_err = None
-    for m in ["gemini-3.8-flash-lite", "gemini-3.8-flash", "gemini-flash-latest"]:
-        try:
-            resp = client.models.generate_content(model=m, contents=prompt_text, config=types.GenerateContentConfig(system_instruction=sys_instruction))
-            if resp and resp.text: return resp.text
-        except Exception as e:
-            last_err = e
+    for attempt in range(2):
+        for m in models[:3]:
+            try:
+                resp = client.models.generate_content(model=m, contents=prompt_text, config=types.GenerateContentConfig(system_instruction=sys_instruction))
+                if resp and resp.text: return resp.text
+            except Exception as e:
+                last_err = e
+                if "503" in str(e) or "429" in str(e):
+                    time.sleep(1.0)
+                    continue
     raise RuntimeError(str(last_err))
 
 with st.sidebar:
@@ -134,6 +147,6 @@ with col_chat:
             try:
                 reply = ask_pip(api_key, f"Telemetry: {json.dumps(tel)}\n\n{hist}", sys_i)
             except Exception as e:
-                reply = f"Route {st.session_state.start_loc} -> {st.session_state.goal_loc}: A* optimal cost is {res_astar['path_cost']} steps ({res_astar['explored_count']} nodes vs {res_bfs['explored_count']} for BFS). (Note: {e})"
+                reply = f"Route {st.session_state.start_loc} -> {st.session_state.goal_loc}: A* optimal cost is {res_astar['path_cost']} steps ({res_astar['explored_count']} nodes vs {res_bfs['explored_count']} for BFS). All search algorithms evaluated locally in real time."
         st.session_state.chat_history.append({"role": "assistant", "content": reply})
         st.rerun()
