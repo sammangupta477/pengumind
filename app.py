@@ -1,3 +1,4 @@
+import base64
 import json
 import streamlit as st
 import plotly.graph_objects as go
@@ -10,11 +11,18 @@ st.set_page_config(page_title="PathSense AI | Campus Navigation & Penguin Assist
 
 st.markdown("<style>.block-container{padding-top:3.6rem!important;padding-bottom:1rem!important;max-width:96%}.hero-title{font-size:1.95rem;font-weight:700;color:#f8fafc}.hero-sub{font-size:0.9rem;color:#94a3b8;margin-bottom:1rem}.stat-card{background:#111827;border:1px solid #1e293b;border-radius:10px;padding:0.7rem 0.95rem;margin-bottom:0.6rem}.stat-label{font-size:0.72rem;text-transform:uppercase;color:#94a3b8}.stat-value{font-size:1.25rem;font-weight:600;color:#38bdf8}.stat-sub{font-size:0.76rem;color:#64748b}</style>", unsafe_allow_html=True)
 
+def get_svg_uri(path):
+    with open(path, "rb") as f:
+        return "data:image/svg+xml;base64," + base64.b64encode(f.read()).decode("utf-8")
+
+logo_uri = get_svg_uri("logo.svg")
+penguin_uri = get_svg_uri("penguin_avatar.svg")
+
 if "start_loc" not in st.session_state: st.session_state.start_loc = "Main Gate"
 if "goal_loc" not in st.session_state: st.session_state.goal_loc = "Central Library"
 if "custom_walls" not in st.session_state: st.session_state.custom_walls = set()
 if "chat_history" not in st.session_state:
-    st.session_state.chat_history = [{"role": "assistant", "content": "Hello! I am Pip, your PathSense AI Penguin Assistant. Ask me anything—from planning campus routes and comparing A*, BFS, DFS, Hill Climbing, and Simulated Annealing, to general AI, math, or coding questions."}]
+    st.session_state.chat_history = [{"role": "assistant", "content": "Hi! I am Pip. Ask me anything about campus paths, search algorithms, or any topic on your mind."}]
 
 api_key = ""
 try: api_key = st.secrets.get("GROQ_API_KEY", "")
@@ -81,7 +89,7 @@ def ask_pip(api_key_val, prompt_text, sys_instruction):
     raise last_err
 
 with st.sidebar:
-    st.markdown("### PathSense Control")
+    st.markdown(f"<div style='display:flex;align-items:center;gap:10px;margin-bottom:8px;'><img src='{logo_uri}' width='36' height='36'/><span style='font-size:1.15rem;font-weight:700;color:#f8fafc;'>PathSense Control</span></div>", unsafe_allow_html=True)
     landmark_names = list(LANDMARKS.keys())
     s_ch = st.selectbox("Origin Landmark", landmark_names, index=landmark_names.index(st.session_state.start_loc))
     g_ch = st.selectbox("Destination Landmark", landmark_names, index=landmark_names.index(st.session_state.goal_loc))
@@ -117,7 +125,7 @@ k2.markdown(f"<div class='stat-card'><div class='stat-label'>Optimal Cost (A*)</
 k3.markdown(f"<div class='stat-card'><div class='stat-label'>Nodes Expanded</div><div class='stat-value'>{res_astar['explored_count']} vs {res_bfs['explored_count']}</div><div class='stat-sub'>A* vs BFS</div></div>", unsafe_allow_html=True)
 k4.markdown(f"<div class='stat-card'><div class='stat-label'>Hill Climbing</div><div class='stat-value' style='font-size:1rem'>{res_hc['status']}</div><div class='stat-sub'>Local search</div></div>", unsafe_allow_html=True)
 
-col_map, col_chat = st.columns([1.18, 1], gap="large")
+col_map, col_chat = st.columns([1.02, 1.28], gap="large")
 with col_map:
     t_map, t_tab = st.tabs(["Interactive Campus Grid", "Algorithm Benchmark Table"])
     with t_map:
@@ -147,11 +155,11 @@ with col_map:
         st.dataframe([{"Algorithm": r["algorithm"], "Status": r["status"], "Cost": r["path_cost"] if r["path_cost"] != -1 else "N/A", "Nodes": r["explored_count"], "Time (ms)": r["time_ms"]} for r in [res_astar, res_bfs, res_dfs, res_hc, res_sa]], use_container_width=True, hide_index=True)
 
 with col_chat:
-    st.markdown("#### Pip — Penguin Virtual Assistant")
-    chat_box = st.container(height=350, border=True)
+    st.markdown(f"<div style='display:flex;align-items:center;gap:10px;margin-bottom:6px;'><img src='{penguin_uri}' width='34' height='34'/><span style='font-size:1.15rem;font-weight:600;color:#f8fafc;'>Pip — Penguin Virtual Assistant</span></div>", unsafe_allow_html=True)
+    chat_box = st.container(height=425, border=True)
     with chat_box:
         for msg in st.session_state.chat_history:
-            with st.chat_message(msg["role"], avatar="penguin_avatar.svg" if msg["role"] == "assistant" else None):
+            with st.chat_message(msg["role"], avatar=penguin_uri if msg["role"] == "assistant" else None):
                 st.markdown(msg["content"])
     user_query = st.chat_input("Ask Pip anything: plan a route, compare algorithms, or ask any question...")
     if user_query:
