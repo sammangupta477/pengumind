@@ -7,7 +7,7 @@ from search_engine import (
     run_astar, run_bfs, run_dfs, run_hill_climbing, run_simulated_annealing
 )
 
-st.set_page_config(page_title="PathSense AI | Campus Navigation & Penguin Assistant", page_icon="logo.svg", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="PenguMind | Campus Navigation & Penguin Assistant", page_icon="logo.svg", layout="wide", initial_sidebar_state="expanded")
 
 st.markdown("<style>.block-container{padding-top:3.6rem!important;padding-bottom:1rem!important;max-width:96%}.hero-title{font-size:1.95rem;font-weight:700;color:#f8fafc}.hero-sub{font-size:0.9rem;color:#94a3b8;margin-bottom:1rem}.stat-card{background:#111827;border:1px solid #1e293b;border-radius:10px;padding:0.7rem 0.95rem;margin-bottom:0.6rem}.stat-label{font-size:0.72rem;text-transform:uppercase;color:#94a3b8}.stat-value{font-size:1.25rem;font-weight:600;color:#38bdf8}.stat-sub{font-size:0.76rem;color:#64748b}.stChatInput{margin-bottom:38px!important;padding-right:115px!important}</style>", unsafe_allow_html=True)
 
@@ -53,7 +53,7 @@ def ask_pip(api_key_val, prompt_text, sys_instruction):
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {api_key_val}",
-        "User-Agent": "PathSense-AI/1.0"
+        "User-Agent": "PenguMind-AI/1.0"
     }
     models = ["llama-3.1-8b-instant", "openai/gpt-oss-120b", "qwen/qwen3-32b"]
     try:
@@ -89,7 +89,7 @@ def ask_pip(api_key_val, prompt_text, sys_instruction):
     raise last_err
 
 with st.sidebar:
-    st.markdown(f"<div style='display:flex;align-items:center;gap:10px;margin-bottom:8px;'><img src='{logo_uri}' width='36' height='36'/><span style='font-size:1.15rem;font-weight:700;color:#f8fafc;'>PathSense Control</span></div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='display:flex;align-items:center;gap:10px;margin-bottom:8px;'><img src='{logo_uri}' width='36' height='36'/><span style='font-size:1.15rem;font-weight:700;color:#f8fafc;'>PenguMind Control</span></div>", unsafe_allow_html=True)
     landmark_names = list(LANDMARKS.keys())
     s_ch = st.selectbox("Origin Landmark", landmark_names, index=landmark_names.index(st.session_state.start_loc))
     g_ch = st.selectbox("Destination Landmark", landmark_names, index=landmark_names.index(st.session_state.goal_loc))
@@ -116,7 +116,7 @@ active_walls = set(DEFAULT_WALLS) | st.session_state.custom_walls | ({(3, 8), (2
 sc, gc = LANDMARKS[st.session_state.start_loc], LANDMARKS[st.session_state.goal_loc]
 res_astar, res_bfs, res_dfs, res_hc, res_sa = run_astar(sc, gc, walls=active_walls), run_bfs(sc, gc, walls=active_walls), run_dfs(sc, gc, walls=active_walls), run_hill_climbing(sc, gc, walls=active_walls), run_simulated_annealing(sc, gc, walls=active_walls)
 
-st.markdown('<div style="display:flex;align-items:center;gap:14px;"><img src="https://raw.githubusercontent.com/sammangupta477/pathsense-ai-assistant/main/logo.svg" width="48" height="48"/><div class="hero-title">PathSense AI</div></div>', unsafe_allow_html=True)
+st.markdown('<div style="display:flex;align-items:center;gap:14px;"><img src="https://raw.githubusercontent.com/sammangupta477/pathsense-ai-assistant/main/logo.svg" width="48" height="48"/><div class="hero-title">PenguMind</div></div>', unsafe_allow_html=True)
 st.markdown('<div class="hero-sub">Interactive State-Space Search Visualizer & Penguin Virtual Assistant (AIP203 Artificial Intelligence Lab)</div>', unsafe_allow_html=True)
 
 k1, k2, k3, k4 = st.columns(4)
@@ -161,8 +161,11 @@ with col_chat:
         for msg in st.session_state.chat_history:
             with st.chat_message(msg["role"], avatar=penguin_uri if msg["role"] == "assistant" else None):
                 st.markdown(msg["content"])
-    user_query = st.chat_input("Ask Pip anything: plan a route, compare algorithms, or ask any question...")
-    if user_query:
+    with st.form("pengumind_chat_form", clear_on_submit=True):
+        in_col, btn_col = st.columns([5, 1])
+        user_query = in_col.text_input("Message Pip", placeholder="Ask Pip anything: plan a route, compare algorithms, or ask any question...", label_visibility="collapsed")
+        submitted = btn_col.form_submit_button("Send", use_container_width=True)
+    if submitted and user_query.strip():
         st.session_state.chat_history.append({"role": "user", "content": user_query})
         if detect_route_change(user_query):
             sc, gc = LANDMARKS[st.session_state.start_loc], LANDMARKS[st.session_state.goal_loc]
@@ -171,7 +174,7 @@ with col_chat:
             reply = "Backend API key not set in Streamlit Secrets."
         else:
             tel = {"route": f"{st.session_state.start_loc} -> {st.session_state.goal_loc}", "A_star": res_astar, "BFS": res_bfs, "DFS": res_dfs, "Hill_Climbing": res_hc, "Simulated_Annealing": res_sa}
-            sys_i = "You are Pip, a smart penguin virtual assistant in PathSense AI (AIP203 AI Lab). Answer ANY question clearly without emojis. Use live telemetry when discussing routes or search algorithms."
+            sys_i = "You are Pip, a smart penguin virtual assistant in PenguMind (AIP203 AI Lab). Answer ANY question clearly without emojis. Use live telemetry when discussing routes or search algorithms."
             hist = "\n".join(f"{m['role'].upper()}: {m['content']}" for m in st.session_state.chat_history[-6:])
             try:
                 reply = ask_pip(api_key, f"Telemetry: {json.dumps(tel)}\n\n{hist}", sys_i)
