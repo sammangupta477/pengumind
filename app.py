@@ -9,14 +9,14 @@ from search_engine import (
 )
 
 st.set_page_config(
-    page_title="PathSense AI | Campus Navigation & AI Assistant",
+    page_title="PathSense AI | Campus Navigation & Penguin Assistant", page_icon="logo.svg",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 st.markdown("""
 <style>
-    .block-container { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+    .block-container { padding-top: 3.6rem !important; padding-bottom: 1rem !important; }
     .hero-title {
         font-size: 2.1rem;
         font-weight: 700;
@@ -65,7 +65,7 @@ if "chat_history" not in st.session_state:
     st.session_state.chat_history = [
         {
             "role": "assistant",
-            "content": "Welcome to PathSense AI. Ask me anything—from planning optimal campus routes and comparing A*, BFS, DFS, Hill Climbing, and Simulated Annealing, to general AI concepts or coding questions."
+            "content": "Hello! I am Pip, your PathSense AI Penguin Assistant. Ask me anything—from planning optimal campus routes and comparing A*, BFS, DFS, Hill Climbing, and Simulated Annealing, to general AI concepts or coding questions."
         }
     ]
 
@@ -137,7 +137,7 @@ res_dfs = run_dfs(start_coords, goal_coords, walls=active_walls)
 res_hc = run_hill_climbing(start_coords, goal_coords, walls=active_walls)
 res_sa = run_simulated_annealing(start_coords, goal_coords, walls=active_walls)
 
-st.markdown('<div class="hero-title">PathSense AI</div>', unsafe_allow_html=True)
+st.markdown('<div style="display:flex;align-items:center;gap:14px;"><img src="https://raw.githubusercontent.com/sammangupta477/pathsense-ai-assistant/main/logo.svg" width="48" height="48"/><div class="hero-title">PathSense AI</div></div>', unsafe_allow_html=True)
 st.markdown(
     '<div class="hero-sub">Interactive State-Space Search Visualizer & Conversational AI Assistant (AIP203 Artificial Intelligence Lab)</div>',
     unsafe_allow_html=True
@@ -286,11 +286,11 @@ with col_map:
         )
 
 with col_chat:
-    st.markdown("#### Conversational Virtual Assistant")
-    chat_box = st.container(height=455, border=True)
+    st.markdown("#### Pip — Penguin Virtual Assistant")
+    chat_box = st.container(height=355, border=True)
     with chat_box:
         for msg in st.session_state.chat_history:
-            with st.chat_message(msg["role"]):
+            with st.chat_message(msg["role"], avatar="penguin_avatar.svg" if msg["role"] == "assistant" else None):
                 st.markdown(msg["content"])
 
     user_query = st.chat_input("Ask anything: plan a route, compare algorithms, or ask any general question...")
@@ -316,7 +316,7 @@ with col_chat:
         route_updated = False
         try:
             intent_resp = client.models.generate_content(
-                model="gemini-3.8-flash",
+                model="gemini-2.5-flash",
                 contents=extraction_prompt,
                 config=types.GenerateContentConfig(response_mime_type="application/json")
             )
@@ -351,7 +351,7 @@ with col_chat:
         }
 
         system_instruction = (
-            "You are PathSense AI, an intelligent, versatile virtual assistant developed for an Artificial Intelligence Lab (AIP203). "
+            "You are Pip, a smart, friendly penguin virtual assistant built into PathSense AI developed for an Artificial Intelligence Lab (AIP203). "
             "You can answer ANY question the user asks—whether about general knowledge, computer science, AI algorithms, mathematics, coding, "
             "or live campus navigation. When the user asks about routes, pathfinding, or search performance, ground your answer in the live "
             "telemetry provided. Do not use emojis in your responses. Keep answers clear, structured, and helpful."
@@ -368,7 +368,7 @@ with col_chat:
 
         try:
             final_resp = client.models.generate_content(
-                model="gemini-3.8-flash",
+                model="gemini-2.5-flash",
                 contents=full_prompt,
                 config=types.GenerateContentConfig(system_instruction=system_instruction)
             )
