@@ -9,7 +9,7 @@ from search_engine import (
 
 st.set_page_config(page_title="PathSense AI | Campus Navigation & Penguin Assistant", page_icon="logo.svg", layout="wide", initial_sidebar_state="expanded")
 
-st.markdown("<style>.block-container{padding-top:3.6rem!important;padding-bottom:1rem!important;max-width:96%}.hero-title{font-size:1.95rem;font-weight:700;color:#f8fafc}.hero-sub{font-size:0.9rem;color:#94a3b8;margin-bottom:1rem}.stat-card{background:#111827;border:1px solid #1e293b;border-radius:10px;padding:0.7rem 0.95rem;margin-bottom:0.6rem}.stat-label{font-size:0.72rem;text-transform:uppercase;color:#94a3b8}.stat-value{font-size:1.25rem;font-weight:600;color:#38bdf8}.stat-sub{font-size:0.76rem;color:#64748b}</style>", unsafe_allow_html=True)
+st.markdown("<style>.block-container{padding-top:3.6rem!important;padding-bottom:1rem!important;max-width:96%}.hero-title{font-size:1.95rem;font-weight:700;color:#f8fafc}.hero-sub{font-size:0.9rem;color:#94a3b8;margin-bottom:1rem}.stat-card{background:#111827;border:1px solid #1e293b;border-radius:10px;padding:0.7rem 0.95rem;margin-bottom:0.6rem}.stat-label{font-size:0.72rem;text-transform:uppercase;color:#94a3b8}.stat-value{font-size:1.25rem;font-weight:600;color:#38bdf8}.stat-sub{font-size:0.76rem;color:#64748b}.stChatInput{margin-bottom:38px!important;padding-right:115px!important}</style>", unsafe_allow_html=True)
 
 def get_svg_uri(path):
     with open(path, "rb") as f:
@@ -156,7 +156,7 @@ with col_map:
 
 with col_chat:
     st.markdown(f"<div style='display:flex;align-items:center;gap:10px;margin-bottom:6px;'><img src='{penguin_uri}' width='34' height='34'/><span style='font-size:1.15rem;font-weight:600;color:#f8fafc;'>Pip — Penguin Virtual Assistant</span></div>", unsafe_allow_html=True)
-    chat_box = st.container(height=425, border=True)
+    chat_box = st.container(height=365, border=True)
     with chat_box:
         for msg in st.session_state.chat_history:
             with st.chat_message(msg["role"], avatar=penguin_uri if msg["role"] == "assistant" else None):
