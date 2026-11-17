@@ -314,8 +314,7 @@ with col_chat:
         User message: {user_query}
         """
         route_updated = False
-        if any(lm.lower() in user_query.lower() for lm in LANDMARKS):
-          try:
+        try:
             intent_resp = client.models.generate_content(
                 model="gemini-3.8-flash",
                 contents=extraction_prompt,
