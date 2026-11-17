@@ -116,7 +116,7 @@ active_walls = set(DEFAULT_WALLS) | st.session_state.custom_walls | ({(3, 8), (2
 sc, gc = LANDMARKS[st.session_state.start_loc], LANDMARKS[st.session_state.goal_loc]
 res_astar, res_bfs, res_dfs, res_hc, res_sa = run_astar(sc, gc, walls=active_walls), run_bfs(sc, gc, walls=active_walls), run_dfs(sc, gc, walls=active_walls), run_hill_climbing(sc, gc, walls=active_walls), run_simulated_annealing(sc, gc, walls=active_walls)
 
-st.markdown('<div style="display:flex;align-items:center;gap:14px;"><img src="https://raw.githubusercontent.com/sammangupta477/pathsense-ai-assistant/main/logo.svg" width="48" height="48"/><div class="hero-title">PenguMind</div></div>', unsafe_allow_html=True)
+st.markdown('<div style="display:flex;align-items:center;gap:14px;"><img src="https://raw.githubusercontent.com/sammangupta477/pengumind/main/logo.svg" width="48" height="48"/><div class="hero-title">PenguMind</div></div>', unsafe_allow_html=True)
 st.markdown('<div class="hero-sub">Interactive State-Space Search Visualizer & Penguin Virtual Assistant (AIP203 Artificial Intelligence Lab)</div>', unsafe_allow_html=True)
 
 k1, k2, k3, k4 = st.columns(4)
