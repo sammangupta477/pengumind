@@ -1,3 +1,4 @@
+import time
 import json
 import streamlit as st
 import plotly.graph_objects as go
@@ -305,6 +306,25 @@ with col_chat:
             st.session_state.chat_history.append({"role": "assistant", "content": reply})
             st.rerun()
 
+        
+def ask_gemini_resilient(client, contents, config=None):
+    models = ["gemini-3.8-flash", "gemini-3.8-flash-lite", "gemini-flash-latest"]
+    last_err = None
+    for attempt in range(3):
+        for m in models:
+            try:
+                return client.models.generate_content(model=m, contents=contents, config=config)
+            except Exception as e:
+                last_err = e
+                err_str = str(e)
+                if "503" in err_str or "429" in err_str or "UNAVAILABLE" in err_str:
+                    time.sleep(0.8 * (attempt + 1))
+                    continue
+                if "404" in err_str or "NOT_FOUND" in err_str:
+                    continue
+                raise e
+    raise last_err
+
         client = genai.Client(api_key=api_key)
 
         extraction_prompt = f"""
@@ -315,8 +335,8 @@ with col_chat:
         """
         route_updated = False
         try:
-            intent_resp = client.models.generate_content(
-                model="gemini-3.8-flash",
+            intent_resp = ask_gemini_resilient(
+                client,
                 contents=extraction_prompt,
                 config=types.GenerateContentConfig(response_mime_type="application/json")
             )
@@ -367,8 +387,8 @@ with col_chat:
         )
 
         try:
-            final_resp = client.models.generate_content(
-                model="gemini-3.8-flash",
+            final_resp = ask_gemini_resilient(
+                client,
                 contents=full_prompt,
                 config=types.GenerateContentConfig(system_instruction=system_instruction)
             )
