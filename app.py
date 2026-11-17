@@ -48,12 +48,54 @@ def get_valid_models(_api_key):
     preferred = [m for m in ["gemini-3.8-flash", "gemini-3.8-flash-lite", "gemini-2.5-flash-lite"] if m in found]
     return preferred + [m for m in found if m not in preferred]
 
+def fetch_live_web_context(query):
+    import urllib.request, urllib.parse, xml.etree.ElementTree as ET, re, html
+    results = []
+    headers = {"User-Agent": "Mozilla/5.0 (compatible; PenguMind/1.0)"}
+
+    # 1. Live Google News RSS (never blocked on cloud servers, returns latest 2026 news/scores)
+    try:
+        rss_url = "https://news.google.com/rss/search?q=" + urllib.parse.quote(query) + "&hl=en-IN&gl=IN&ceid=IN:en"
+        req = urllib.request.Request(rss_url, headers=headers)
+        with urllib.request.urlopen(req, timeout=6) as resp:
+            root = ET.fromstring(resp.read())
+            for item in root.findall(".//item")[:5]:
+                title = (item.findtext("title") or "").strip()
+                pub = (item.findtext("pubDate") or "").strip()
+                desc = re.sub(r"<[^>]+>", "", html.unescape(item.findtext("description") or "")).strip()
+                if title:
+                    results.append(f"[{pub}] {title} — {desc[:180]}")
+    except Exception:
+        pass
+
+    # 2. Wikipedia Live Search API fallback for general facts
+    if len(results) < 2:
+        try:
+            wiki_url = "https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=" + urllib.parse.quote(query) + "&format=json&srlimit=3"
+            req = urllib.request.Request(wiki_url, headers=headers)
+            with urllib.request.urlopen(req, timeout=6) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                for hit in data.get("query", {}).get("search", []):
+                    snip = re.sub(r"<[^>]+>", "", html.unescape(hit.get("snippet", ""))).strip()
+                    results.append(f"{hit.get('title', '')}: {snip}")
+        except Exception:
+            pass
+
+    return "\n- ".join(results)
+
 def ask_pip(api_key_val, prompt_text, sys_instruction):
     import urllib.request
+    from datetime import date
+
+    live_notes = fetch_live_web_context(prompt_text)
+    enriched_sys = f"{sys_instruction}\nCurrent Date: {date.today().strftime('%B %d, %Y')}. You have live internet search enabled. NEVER mention a 2024 knowledge cutoff or say you lack real-time information."
+    if live_notes:
+        enriched_sys += f"\nLive web search context for this query:\n- {live_notes}\nUse these live facts accurately when answering."
+
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {api_key_val}",
-        "User-Agent": "PenguMind-AI/1.0"
+        "User-Agent": "PenguMind/1.0"
     }
     models = ["llama-3.1-8b-instant", "openai/gpt-oss-120b", "qwen/qwen3-32b"]
     try:
@@ -75,10 +117,10 @@ def ask_pip(api_key_val, prompt_text, sys_instruction):
             payload = json.dumps({
                 "model": model_id,
                 "messages": [
-                    {"role": "system", "content": sys_instruction},
+                    {"role": "system", "content": enriched_sys},
                     {"role": "user", "content": prompt_text}
                 ],
-                "temperature": 0.4
+                "temperature": 0.3
             }).encode("utf-8")
             req = urllib.request.Request("https://api.groq.com/openai/v1/chat/completions", data=payload, headers=headers, method="POST")
             with urllib.request.urlopen(req, timeout=12) as resp:
