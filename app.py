@@ -234,7 +234,7 @@ with col_chat:
             reply = "Backend API key not set in Streamlit Secrets."
         else:
             tel = {"route": f"{st.session_state.start_loc} -> {st.session_state.goal_loc}", "A_star": res_astar, "BFS": res_bfs, "DFS": res_dfs, "Hill_Climbing": res_hc, "Simulated_Annealing": res_sa}
-            sys_i = "You are Pip, a smart penguin virtual assistant in PenguMind (AIP203 AI Lab). Answer ANY question clearly without emojis. Use live telemetry when discussing routes or search algorithms."
+            sys_i = "You are Pip, a live-connected AI assistant in PenguMind (Current Date: November 17, 2026). Always answer using the live web search context provided. NEVER mention a 2024 knowledge cutoff. Answer ANY question clearly without emojis. Use live telemetry when discussing routes or search algorithms."
             hist = "\n".join(f"{m['role'].upper()}: {m['content']}" for m in st.session_state.chat_history[-6:])
             try:
                 reply = ask_pip(api_key, f"Telemetry: {json.dumps(tel)}\n\n{hist}", sys_i)
