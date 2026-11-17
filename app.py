@@ -42,28 +42,43 @@ def get_valid_models(_api_key):
 
 def ask_pip(api_key_val, prompt_text, sys_instruction):
     import urllib.request
-    url = "https://api.groq.com/openai/v1/chat/completions"
-    payload = json.dumps({
-        "model": "llama-3.3-70b-versatile",
-        "messages": [
-            {"role": "system", "content": sys_instruction},
-            {"role": "user", "content": prompt_text}
-        ],
-        "temperature": 0.4
-    }).encode("utf-8")
-    req = urllib.request.Request(
-        url,
-        data=payload,
-        headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {api_key_val}",
-            "User-Agent": "PathSense-AI/1.0"
-        },
-        method="POST"
-    )
-    with urllib.request.urlopen(req, timeout=12) as resp:
-        data = json.loads(resp.read().decode("utf-8"))
-        return data["choices"][0]["message"]["content"]
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {api_key_val}",
+        "User-Agent": "PathSense-AI/1.0"
+    }
+    models = ["llama-3.1-8b-instant", "openai/gpt-oss-120b", "qwen/qwen3-32b"]
+    try:
+        m_req = urllib.request.Request("https://api.groq.com/openai/v1/models", headers=headers, method="GET")
+        with urllib.request.urlopen(m_req, timeout=8) as m_resp:
+            available = [
+                m["id"] for m in json.loads(m_resp.read().decode("utf-8")).get("data", [])
+                if not any(x in m["id"].lower() for x in ["whisper", "guard", "tts", "embed", "vision"])
+            ]
+            if available:
+                preferred = [m for m in models if m in available]
+                models = preferred + [m for m in available if m not in preferred]
+    except Exception:
+        pass
+
+    last_err = None
+    for model_id in models[:4]:
+        try:
+            payload = json.dumps({
+                "model": model_id,
+                "messages": [
+                    {"role": "system", "content": sys_instruction},
+                    {"role": "user", "content": prompt_text}
+                ],
+                "temperature": 0.4
+            }).encode("utf-8")
+            req = urllib.request.Request("https://api.groq.com/openai/v1/chat/completions", data=payload, headers=headers, method="POST")
+            with urllib.request.urlopen(req, timeout=12) as resp:
+                return json.loads(resp.read().decode("utf-8"))["choices"][0]["message"]["content"]
+        except Exception as e:
+            last_err = e
+            continue
+    raise last_err
 
 with st.sidebar:
     st.markdown("### PathSense Control")
