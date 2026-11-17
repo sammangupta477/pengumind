@@ -167,7 +167,7 @@ k2.markdown(f"<div class='stat-card'><div class='stat-label'>Optimal Cost (A*)</
 k3.markdown(f"<div class='stat-card'><div class='stat-label'>Nodes Expanded</div><div class='stat-value'>{res_astar['explored_count']} vs {res_bfs['explored_count']}</div><div class='stat-sub'>A* vs BFS</div></div>", unsafe_allow_html=True)
 k4.markdown(f"<div class='stat-card'><div class='stat-label'>Hill Climbing</div><div class='stat-value' style='font-size:1rem'>{res_hc['status']}</div><div class='stat-sub'>Local search</div></div>", unsafe_allow_html=True)
 
-col_map, col_chat = st.columns([0.65, 1.55], gap="large")
+col_map, col_chat = st.columns([0.55, 1.65], gap="large")
 with col_map:
     t_map, t_tab = st.tabs(["Interactive Campus Grid", "Algorithm Benchmark Table"])
     with t_map:
@@ -191,14 +191,14 @@ with col_map:
         for nm, (r, c) in LANDMARKS.items():
             cl = "#22c55e" if nm == st.session_state.start_loc else ("#ef4444" if nm == st.session_state.goal_loc else "#38bdf8")
             fig.add_trace(go.Scatter(x=[c], y=[r], mode="markers+text", text=[nm], textposition="top center", textfont=dict(size=10, color="#f8fafc"), marker=dict(size=14 if nm in (st.session_state.start_loc, st.session_state.goal_loc) else 10, color=cl), showlegend=False))
-        fig.update_layout(height=650, margin=dict(l=10, r=10, t=20, b=10), paper_bgcolor="#0b1120", plot_bgcolor="#0f172a", xaxis=dict(range=[-0.7, 11.7], showgrid=False, zeroline=False, showticklabels=False), yaxis=dict(range=[11.7, -0.7], showgrid=False, zeroline=False, showticklabels=False), legend=dict(orientation="h", yanchor="bottom", y=1.01, x=0, font=dict(size=11, color="#cbd5e1")))
+        fig.update_layout(height=800, margin=dict(l=10, r=10, t=20, b=10), paper_bgcolor="#0b1120", plot_bgcolor="#0f172a", xaxis=dict(range=[-0.7, 11.7], showgrid=False, zeroline=False, showticklabels=False), yaxis=dict(range=[11.7, -0.7], showgrid=False, zeroline=False, showticklabels=False), legend=dict(orientation="h", yanchor="bottom", y=1.01, x=0, font=dict(size=11, color="#cbd5e1")))
         st.plotly_chart(fig, use_container_width=True)
     with t_tab:
         st.dataframe([{"Algorithm": r["algorithm"], "Status": r["status"], "Cost": r["path_cost"] if r["path_cost"] != -1 else "N/A", "Nodes": r["explored_count"], "Time (ms)": r["time_ms"]} for r in [res_astar, res_bfs, res_dfs, res_hc, res_sa]], use_container_width=True, hide_index=True)
 
 with col_chat:
     st.markdown(f"<div style='display:flex;align-items:center;gap:10px;margin-bottom:6px;'><img src='{penguin_uri}' width='34' height='34'/><span style='font-size:1.15rem;font-weight:600;color:#f8fafc;'>Pip — Penguin Virtual Assistant</span></div>", unsafe_allow_html=True)
-    chat_box = st.container(height=650, border=True)
+    chat_box = st.container(height=800, border=True)
     with chat_box:
         for msg in st.session_state.chat_history:
             with st.chat_message(msg["role"], avatar=penguin_uri if msg["role"] == "assistant" else None):
