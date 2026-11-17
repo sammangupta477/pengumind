@@ -153,6 +153,8 @@ with col_chat:
             try:
                 reply = ask_pip(api_key, f"Telemetry: {json.dumps(tel)}\n\n{hist}", sys_i)
             except Exception as e:
-                reply = f"Route {st.session_state.start_loc} -> {st.session_state.goal_loc}: A* optimal cost is {res_astar['path_cost']} steps ({res_astar['explored_count']} nodes vs {res_bfs['explored_count']} for BFS). All search algorithms evaluated locally in real time."
+                import urllib.error
+                detail = e.read().decode() if isinstance(e, urllib.error.HTTPError) else str(e)
+                reply = f"Groq API error: {detail}"
         st.session_state.chat_history.append({"role": "assistant", "content": reply})
         st.rerun()
