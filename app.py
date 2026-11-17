@@ -9,6 +9,14 @@ from search_engine import (
     run_astar, run_bfs, run_dfs, run_hill_climbing, run_simulated_annealing
 )
 
+def ask_gemini_resilient(client, contents, config=None):
+    for m in ["gemini-3.8-flash", "gemini-3.8-flash-lite", "gemini-flash-latest"]:
+        try:
+            return client.models.generate_content(model=m, contents=contents, config=config)
+        except Exception as e:
+            last_err = e
+    raise last_err
+
 st.set_page_config(
     page_title="PathSense AI | Campus Navigation & Penguin Assistant", page_icon="logo.svg",
     layout="wide",
@@ -305,26 +313,6 @@ with col_chat:
             )
             st.session_state.chat_history.append({"role": "assistant", "content": reply})
             st.rerun()
-
-        
-def ask_gemini_resilient(client, contents, config=None):
-    models = ["gemini-3.8-flash", "gemini-3.8-flash-lite", "gemini-flash-latest"]
-    last_err = None
-    for attempt in range(3):
-        for m in models:
-            try:
-                return client.models.generate_content(model=m, contents=contents, config=config)
-            except Exception as e:
-                last_err = e
-                err_str = str(e)
-                if "503" in err_str or "429" in err_str or "UNAVAILABLE" in err_str:
-                    time.sleep(0.8 * (attempt + 1))
-                    continue
-                if "404" in err_str or "NOT_FOUND" in err_str:
-                    continue
-                raise e
-    raise last_err
-
         client = genai.Client(api_key=api_key)
 
         extraction_prompt = f"""
