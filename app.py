@@ -9,7 +9,7 @@ from search_engine import (
 
 st.set_page_config(page_title="PenguMind | Campus Navigation & Penguin Assistant", page_icon="logo.svg", layout="wide", initial_sidebar_state="expanded")
 
-st.markdown("<style>.block-container{padding-top:3.6rem!important;padding-bottom:1rem!important;max-width:96%}.hero-title{font-size:1.95rem;font-weight:700;color:#f8fafc}.hero-sub{font-size:0.9rem;color:#94a3b8;margin-bottom:1rem}.stat-card{background:#111827;border:1px solid #1e293b;border-radius:10px;padding:0.7rem 0.95rem;margin-bottom:0.6rem}.stat-label{font-size:0.72rem;text-transform:uppercase;color:#94a3b8}.stat-value{font-size:1.25rem;font-weight:600;color:#38bdf8}.stat-sub{font-size:0.76rem;color:#64748b}.stChatInput{margin-bottom:38px!important;padding-right:115px!important}</style>", unsafe_allow_html=True)
+st.markdown("<style>.block-container{padding-top:3.6rem!important;padding-bottom:1rem!important;max-width:96%}.hero-title{font-size:1.95rem;font-weight:700;color:#f8fafc}.hero-sub{font-size:0.9rem;color:#94a3b8;margin-bottom:1rem}.stat-card{background:#111827;border:1px solid #1e293b;border-radius:10px;padding:0.7rem 0.95rem;margin-bottom:0.6rem}.stat-label{font-size:0.72rem;text-transform:uppercase;color:#94a3b8}.stat-value{font-size:1.25rem;font-weight:600;color:#38bdf8}.stat-sub{font-size:0.76rem;color:#64748b}[data-testid='InputInstructions']{display:none!important}[data-testid='stForm']{border:none!important;padding:0!important}.stChatInput{margin-bottom:38px!important;padding-right:115px!important}</style>", unsafe_allow_html=True)
 
 def get_svg_uri(path):
     with open(path, "rb") as f:
@@ -161,10 +161,10 @@ with col_chat:
         for msg in st.session_state.chat_history:
             with st.chat_message(msg["role"], avatar=penguin_uri if msg["role"] == "assistant" else None):
                 st.markdown(msg["content"])
-    with st.form("pengumind_chat_form", clear_on_submit=True):
-        in_col, btn_col = st.columns([5, 1])
-        user_query = in_col.text_input("Message Pip", placeholder="Ask Pip anything: plan a route, compare algorithms, or ask any question...", label_visibility="collapsed")
-        submitted = btn_col.form_submit_button("Send", use_container_width=True)
+    with st.form("pengumind_chat_form", clear_on_submit=True, border=False):
+        in_col, btn_col = st.columns([6.5, 1], vertical_alignment="center")
+        user_query = in_col.text_input("Message Pip", placeholder="Ask Pip anything...", label_visibility="collapsed")
+        submitted = btn_col.form_submit_button("➤", type="primary", use_container_width=True)
     if submitted and user_query.strip():
         st.session_state.chat_history.append({"role": "user", "content": user_query})
         if detect_route_change(user_query):
