@@ -1,8 +1,6 @@
 import json
 import streamlit as st
 import plotly.graph_objects as go
-from google import genai
-from google.genai import types
 from search_engine import (
     LANDMARKS, DEFAULT_WALLS,
     run_astar, run_bfs, run_dfs, run_hill_climbing, run_simulated_annealing
@@ -19,7 +17,7 @@ if "chat_history" not in st.session_state:
     st.session_state.chat_history = [{"role": "assistant", "content": "Hello! I am Pip, your PathSense AI Penguin Assistant. Ask me anything—from planning campus routes and comparing A*, BFS, DFS, Hill Climbing, and Simulated Annealing, to general AI, math, or coding questions."}]
 
 api_key = ""
-try: api_key = st.secrets.get("GEMINI_API_KEY", "")
+try: api_key = st.secrets.get("GROQ_API_KEY", "")
 except Exception: api_key = ""
 
 def detect_route_change(query_text):
@@ -43,21 +41,29 @@ def get_valid_models(_api_key):
     return preferred + [m for m in found if m not in preferred]
 
 def ask_pip(api_key_val, prompt_text, sys_instruction):
-    import time
-    client = genai.Client(api_key=api_key_val, http_options=types.HttpOptions(timeout=15000))
-    models = get_valid_models(api_key_val) or ["gemini-3.8-flash"]
-    last_err = None
-    for attempt in range(2):
-        for m in models[:3]:
-            try:
-                resp = client.models.generate_content(model=m, contents=prompt_text, config=types.GenerateContentConfig(system_instruction=sys_instruction))
-                if resp and resp.text: return resp.text
-            except Exception as e:
-                last_err = e
-                if "503" in str(e) or "429" in str(e):
-                    time.sleep(1.0)
-                    continue
-    raise RuntimeError(str(last_err))
+    import urllib.request
+    url = "https://api.groq.com/openai/v1/chat/completions"
+    payload = json.dumps({
+        "model": "llama-3.3-70b-versatile",
+        "messages": [
+            {"role": "system", "content": sys_instruction},
+            {"role": "user", "content": prompt_text}
+        ],
+        "temperature": 0.4
+    }).encode("utf-8")
+    req = urllib.request.Request(
+        url,
+        data=payload,
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key_val}",
+            "User-Agent": "PathSense-AI/1.0"
+        },
+        method="POST"
+    )
+    with urllib.request.urlopen(req, timeout=12) as resp:
+        data = json.loads(resp.read().decode("utf-8"))
+        return data["choices"][0]["message"]["content"]
 
 with st.sidebar:
     st.markdown("### PathSense Control")
