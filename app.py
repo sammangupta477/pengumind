@@ -314,9 +314,10 @@ with col_chat:
         User message: {user_query}
         """
         route_updated = False
-        try:
+        if any(lm.lower() in user_query.lower() for lm in LANDMARKS):
+          try:
             intent_resp = client.models.generate_content(
-                model="gemini-2.5-flash",
+                model="gemini-3.8-flash",
                 contents=extraction_prompt,
                 config=types.GenerateContentConfig(response_mime_type="application/json")
             )
@@ -368,7 +369,7 @@ with col_chat:
 
         try:
             final_resp = client.models.generate_content(
-                model="gemini-2.5-flash",
+                model="gemini-3.8-flash",
                 contents=full_prompt,
                 config=types.GenerateContentConfig(system_instruction=system_instruction)
             )
