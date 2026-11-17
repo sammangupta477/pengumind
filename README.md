@@ -1,7 +1,3 @@
-# PathSense AI: Intelligent Campus Navigation Virtual Assistant
+# PathSense AI: Interactive State-Space Search & Virtual Assistant
 
-Hybrid AI mini-project combining A*, BFS, DFS, and Hill Climbing search algorithms with a Gemini-powered Virtual Assistant (AIP203 Artificial Intelligence Lab).
-
-## Quick Start
-pip install -r requirements.txt
-streamlit run app.py
+Full-stack Artificial Intelligence Lab (AIP203) project combining A*, BFS, DFS, Hill Climbing, and Simulated Annealing with an interactive Plotly grid and Gemini 2.5 Flash virtual assistant.
